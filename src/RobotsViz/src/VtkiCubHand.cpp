@@ -23,7 +23,7 @@ using namespace RobotsViz;
 using namespace yarp::eigen;
 
 
-VtkiCubHand::VtkiCubHand(const std::string& robot_name, const std::string& laterality, const std::string& port_prefix, const bool& use_fingers, const bool& use_analogs, const std::tuple<double, double, double>& color, const double& opacity) :
+VtkiCubHand::VtkiCubHand(const std::string& robot_name, const std::string& laterality, const std::string& port_prefix, const bool& use_fingers, const bool& use_analogs, const std::tuple<double, double, double>& color, const double& opacity, const bool &use_abduction) :
     use_fingers_(use_fingers)
 {
     if ((laterality != "left") && (laterality != "right"))
@@ -81,7 +81,7 @@ VtkiCubHand::VtkiCubHand(const std::string& robot_name, const std::string& later
     {
         fingers_encoders_ = std::unique_ptr<iCubHand>
         (
-            new iCubHand(robot_name, laterality, port_prefix + "/vtk-icub-hand", "icub-fingers-encoders", use_analogs)
+            new iCubHand(robot_name, laterality, port_prefix + "/vtk-icub-hand", "icub-fingers-encoders", use_analogs, "", use_abduction)
         );
     }
 
