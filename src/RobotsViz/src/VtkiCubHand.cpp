@@ -137,3 +137,15 @@ void RobotsViz::VtkiCubHand::setTransform(const Eigen::Matrix4d &transform)
 {
     transform_ = transform;
 }
+
+void VtkiCubHand::setColor(const std::tuple<double, double, double> &color)
+{
+    for (auto& mesh : meshes_)
+        mesh.second.setColor(color);
+}
+
+void VtkiCubHand::setOpacity(const double &opacity)
+{
+    for (auto& mesh : meshes_)
+        mesh.second.setOpacity(opacity);
+}

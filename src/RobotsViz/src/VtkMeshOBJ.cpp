@@ -52,8 +52,8 @@ void VtkMeshOBJ::initialize(const std::tuple<double, double, double>& color, con
     /* Initialize actor. */
     mesh_actor_ = vtkSmartPointer<vtkActor>::New();
     mesh_actor_->SetMapper(mapper_);
-    mesh_actor_->GetProperty()->SetColor(std::get<0>(color), std::get<1>(color), std::get<2>(color));
-    mesh_actor_->GetProperty()->SetOpacity(opacity);
+    setColor(color);
+    setOpacity(opacity);
 }
 
 
@@ -78,4 +78,14 @@ void VtkMeshOBJ::set_pose(const Transform<double, 3, Affine>& pose)
 
     /* Apply transform. */
     mesh_actor_->SetUserTransform(transform);
+}
+
+void VtkMeshOBJ::setColor(const std::tuple<double, double, double> &color)
+{
+    mesh_actor_->GetProperty()->SetColor(std::get<0>(color), std::get<1>(color), std::get<2>(color));
+}
+
+void VtkMeshOBJ::setOpacity(const double &opacity)
+{
+    mesh_actor_->GetProperty()->SetOpacity(opacity);
 }

@@ -38,6 +38,10 @@ public:
 
     void set_pose(const Eigen::Transform<double, 3, Eigen::Affine>& pose);
 
+    void setColor(const std::tuple<double, double, double>& color);
+
+    void setOpacity(const double& opacity);
+
 private:
     void initialize(const std::tuple<double, double, double>& color, const double& opacity);
 

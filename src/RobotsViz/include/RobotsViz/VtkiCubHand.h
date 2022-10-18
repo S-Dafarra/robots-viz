@@ -43,6 +43,10 @@ public:
 
     void setTransform(const Eigen::Matrix4d &transform);
 
+    void setColor(const std::tuple<double, double, double>& color);
+
+    void setOpacity(const double& opacity);
+
 private:
     yarp::os::Network yarp_;
 
