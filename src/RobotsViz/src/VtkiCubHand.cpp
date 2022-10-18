@@ -117,18 +117,15 @@ bool VtkiCubHand::update(const bool& blocking)
     }
 
     std::unordered_map<std::string, VectorXd> encoders;
+    bool valid_encoders = false;
     if (use_fingers_)
     {
-        bool valid_encoders = false;
         std::tie(valid_encoders, encoders) = fingers_encoders_->encoders(blocking);
-
-        if (!valid_encoders)
-            return false;
     }
 
     /* Palm. */
     for (auto& mesh : meshes_)
-        if (use_fingers_)
+        if (valid_encoders)
             mesh.second.set_pose(transform_ * forward_kinematics_->map("ee", mesh.first, encoders));
         else
             mesh.second.set_pose(transform_ * forward_kinematics_->map("ee", mesh.first));
