@@ -141,11 +141,11 @@ void RobotsViz::VtkiCubHand::setTransform(const Eigen::Matrix4d &transform)
 void VtkiCubHand::setColor(const std::tuple<double, double, double> &color)
 {
     for (auto& mesh : meshes_)
-        mesh.second.setColor(color);
+        mesh.second.set_color(color);
 }
 
 void VtkiCubHand::setOpacity(const double &opacity)
 {
     for (auto& mesh : meshes_)
-        mesh.second.setOpacity(opacity);
+        mesh.second.set_opacity(opacity);
 }
