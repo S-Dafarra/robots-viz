@@ -159,6 +159,8 @@ cmrc_add_resource_library(${LIBRARY_TARGET_NAME}_RCShader
                           meshes/full_RightLittle1.obj
                           meshes/full_RightLittle2.obj
                           meshes/full_RightLittle3.obj
+                          meshes/sim_icub3_l_forearm_prt.obj
+                          meshes/sim_icub3_r_forearm_prt.obj
 )
 
 # Create library
