@@ -28,12 +28,12 @@ namespace RobotsViz {
 class RobotsViz::VtkObject : public RobotsViz::VtkContent
 {
 public:
-    VtkObject(const std::string& mesh_path, std::unique_ptr<RobotsIO::Utils::Transform> object_transform, const std::tuple<double, double, double>& color, const double& opacity);
+    VtkObject(const std::string& mesh_path, std::shared_ptr<RobotsIO::Utils::Transform> object_transform, const std::tuple<double, double, double>& color, const double& opacity);
 
-    VtkObject(const Resources& resource, std::unique_ptr<RobotsIO::Utils::Transform> object_transform, const std::tuple<double, double, double>& color, const double& opacity);
+    VtkObject(const Resources& resource, std::shared_ptr<RobotsIO::Utils::Transform> object_transform, const std::tuple<double, double, double>& color, const double& opacity);
 
 #ifdef ROBOTSVIZ_USES_OTL
-    VtkObject(const OTL::ModelParameters& object_parameters, std::unique_ptr<RobotsIO::Utils::Transform> object_transform, const std::tuple<double, double, double>& color, const double& opacity);
+    VtkObject(const OTL::ModelParameters& object_parameters, std::shared_ptr<RobotsIO::Utils::Transform> object_transform, const std::tuple<double, double, double>& color, const double& opacity);
 #endif
 
     virtual ~VtkObject();
@@ -44,13 +44,19 @@ public:
 
     VtkReferenceFrame& get_frame();
 
+    void set_color(const std::tuple<double, double, double>& color);
+
+    void set_opacity(const double& opacity);
+
+    void set_visibility(bool visible);
+
 protected:
-    VtkObject(std::unique_ptr<RobotsIO::Utils::Transform> object_transform, const std::tuple<double, double, double>& color, const double& opacity);
+    VtkObject(std::shared_ptr<RobotsIO::Utils::Transform> object_transform, const std::tuple<double, double, double>& color, const double& opacity);
 
 private:
     const std::string log_name_ = "VtkObject";
 
-    std::unique_ptr<RobotsIO::Utils::Transform> transform_;
+    std::shared_ptr<RobotsIO::Utils::Transform> transform_;
 
     std::unique_ptr<VtkMeshOBJ> vtk_mesh_;
 

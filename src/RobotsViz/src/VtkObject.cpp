@@ -20,9 +20,8 @@ using namespace OTL;
 
 
 VtkObject::VtkObject
-(
-    const std::string& mesh_path,
-    std::unique_ptr<RobotsIO::Utils::Transform> object_transform,
+(const std::string& mesh_path,
+    std::shared_ptr<Transform> object_transform,
     const std::tuple<double, double, double>& color,
     const double& opacity
 ) :
@@ -33,9 +32,8 @@ VtkObject::VtkObject
 
 
 VtkObject::VtkObject
-(
-    const Resources& mesh_resource,
-    std::unique_ptr<RobotsIO::Utils::Transform> object_transform,
+(const Resources& mesh_resource,
+    std::shared_ptr<Transform> object_transform,
     const std::tuple<double, double, double>& color,
     const double& opacity
 ) :
@@ -49,7 +47,7 @@ VtkObject::VtkObject
 VtkObject::VtkObject
 (
     const ModelParameters& object_parameters,
-    std::unique_ptr<Transform> object_transform,
+    std::shared_ptr<Transform> object_transform,
     const std::tuple<double, double, double>& color,
     const double& opacity
 ) :
@@ -64,7 +62,7 @@ VtkObject::VtkObject
 
 VtkObject::VtkObject
 (
-    std::unique_ptr<Transform> object_transform,
+    std::shared_ptr<Transform> object_transform,
     const std::tuple<double, double, double>& color,
     const double& opacity
 ) :
@@ -112,4 +110,19 @@ VtkReferenceFrame& VtkObject::get_frame()
 {
     /* Dereferencing is safe as the frame is always constructed in the ctor. */
     return *vtk_frame_;
+}
+
+void VtkObject::set_color(const std::tuple<double, double, double> &color)
+{
+    vtk_mesh_->set_color(color);
+}
+
+void VtkObject::set_opacity(const double &opacity)
+{
+    vtk_mesh_->set_opacity(opacity);
+}
+
+void VtkObject::set_visibility(bool visible)
+{
+    vtk_mesh_->set_visibility(visible);
 }
