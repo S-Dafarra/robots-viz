@@ -23,69 +23,30 @@ using namespace RobotsViz;
 using namespace yarp::eigen;
 
 
-VtkiCubHand::VtkiCubHand(const std::string& robot_name, const std::string& laterality, const std::string& port_prefix, const bool& use_fingers, const bool& use_analogs, const std::tuple<double, double, double>& color, const double& opacity, const bool &use_abduction) :
-    use_fingers_(use_fingers)
+VtkiCubHand::VtkiCubHand(const std::string& robot_name, const std::string& laterality, const std::string& port_prefix, const bool& use_fingers, const bool& use_analogs, const std::tuple<double, double, double>& color, const double& opacity, const bool &use_abduction)
 {
-    if ((laterality != "left") && (laterality != "right"))
-        throw(std::runtime_error(log_name_ + "::ctor. Invalid laterality specified."));
+    setup(laterality, port_prefix, color, opacity);
 
-    std::string laterality_key = ((laterality == "right") ? "Right" : "Left");
-
-    /* Check YARP network. */
-    if (!yarp_.checkNetwork())
-    {
-        throw(std::runtime_error(log_name_ + "::ctor. Error: YARP network is not available."));
-    }
-
-    /* Open input port. */
-    if(!hand_pose_port_in_.open("/" + port_prefix + "/vtk-icub-hand/" + laterality + "/state:i"))
-        throw(std::runtime_error(log_name_ + "::ctor. Cannot open hand pose input port."));
-
-    /* Add meshes of hand parts. */
-    meshes_.emplace("palm", VtkMeshOBJ(MeshResources("full_" +  laterality_key + "HandPalm.obj"), color, opacity));
-    meshes_.emplace("top_cover", VtkMeshOBJ(MeshResources("full_" +  laterality_key + "TopCover.obj"), color, opacity));
-
-    meshes_.emplace("thumb0", VtkMeshOBJ(MeshResources("full_" + laterality_key + "Thumb0.obj"), color, opacity));
-    meshes_.emplace("thumb1", VtkMeshOBJ(MeshResources("full_" + laterality_key + "Thumb1.obj"), color, opacity));
-    meshes_.emplace("thumb2", VtkMeshOBJ(MeshResources("full_" + laterality_key + "Thumb2.obj"), color, opacity));
-    meshes_.emplace("thumb3", VtkMeshOBJ(MeshResources("full_" + laterality_key + "Thumb3.obj"), color, opacity));
-
-    meshes_.emplace("index0", VtkMeshOBJ(MeshResources("full_" + laterality_key + "Index0.obj"), color, opacity));
-    meshes_.emplace("index1", VtkMeshOBJ(MeshResources("full_" + laterality_key + "Index1.obj"), color, opacity));
-    meshes_.emplace("index2", VtkMeshOBJ(MeshResources("full_" + laterality_key + "Index2.obj"), color, opacity));
-    meshes_.emplace("index3", VtkMeshOBJ(MeshResources("full_" + laterality_key + "Index3.obj"), color, opacity));
-
-    meshes_.emplace("middle0", VtkMeshOBJ(MeshResources("full_" + laterality_key + "Middle0.obj"), color, opacity));
-    meshes_.emplace("middle1", VtkMeshOBJ(MeshResources("full_" + laterality_key + "Middle1.obj"), color, opacity));
-    meshes_.emplace("middle2", VtkMeshOBJ(MeshResources("full_" + laterality_key + "Middle2.obj"), color, opacity));
-    meshes_.emplace("middle3", VtkMeshOBJ(MeshResources("full_" + laterality_key + "Middle3.obj"), color, opacity));
-
-    meshes_.emplace("ring0", VtkMeshOBJ(MeshResources("full_" + laterality_key + "Ring0.obj"), color, opacity));
-    meshes_.emplace("ring1", VtkMeshOBJ(MeshResources("full_" + laterality_key + "Ring1.obj"), color, opacity));
-    meshes_.emplace("ring2", VtkMeshOBJ(MeshResources("full_" + laterality_key + "Ring2.obj"), color, opacity));
-    meshes_.emplace("ring3", VtkMeshOBJ(MeshResources("full_" + laterality_key + "Ring3.obj"), color, opacity));
-
-    meshes_.emplace("little0", VtkMeshOBJ(MeshResources("full_" + laterality_key + "Little0.obj"), color, opacity));
-    meshes_.emplace("little1", VtkMeshOBJ(MeshResources("full_" + laterality_key + "Little1.obj"), color, opacity));
-    meshes_.emplace("little2", VtkMeshOBJ(MeshResources("full_" + laterality_key + "Little2.obj"), color, opacity));
-    meshes_.emplace("little3", VtkMeshOBJ(MeshResources("full_" + laterality_key + "Little3.obj"), color, opacity));
-
-    /* Configure forward kinematics. */
-    forward_kinematics_ = std::unique_ptr<iCubForwardKinematics>
-    (
-        new iCubForwardKinematics(laterality + "_hand")
-    );
+    use_fingers_ = use_fingers;
 
     /* Configure fingers encoders. */
     if (use_fingers_)
     {
-        fingers_encoders_ = std::unique_ptr<iCubHand>
-        (
-            new iCubHand(robot_name, laterality, port_prefix + "/vtk-icub-hand", "icub-fingers-encoders", use_analogs, "", use_abduction)
-        );
+        fingers_encoders_ = std::make_unique<iCubHand>(robot_name, laterality, port_prefix + "/vtk-icub-hand", "icub-fingers-encoders", use_analogs, "", use_abduction);
     }
+}
 
-    transform_.setIdentity();
+VtkiCubHand::VtkiCubHand(const std::string &robot_name, const std::string &laterality, const std::string &port_prefix, const bool &use_fingers, const bool &use_analogs, const std::tuple<double, double, double> &color, const double &opacity, const bool &use_analogs_bounds, const yarp::sig::Matrix &analog_bounds, const bool &use_abduction)
+{
+    setup(laterality, port_prefix, color, opacity);
+
+    use_fingers_ = use_fingers;
+
+    /* Configure fingers encoders. */
+    if (use_fingers_)
+    {
+        fingers_encoders_ = std::make_unique<iCubHand>(robot_name, laterality, port_prefix + "/vtk-icub-hand", use_analogs, use_analogs_bounds, analog_bounds, "", use_abduction);
+    }
 }
 
 
@@ -148,4 +109,59 @@ void VtkiCubHand::setOpacity(const double &opacity)
 {
     for (auto& mesh : meshes_)
         mesh.second.set_opacity(opacity);
+}
+
+void VtkiCubHand::setup(const std::string &laterality, const std::string &port_prefix, const std::tuple<double, double, double> &color, const double &opacity)
+{
+    if ((laterality != "left") && (laterality != "right"))
+        throw(std::runtime_error(log_name_ + "::ctor. Invalid laterality specified."));
+
+    std::string laterality_key = ((laterality == "right") ? "Right" : "Left");
+
+    /* Check YARP network. */
+    if (!yarp_.checkNetwork())
+    {
+        throw(std::runtime_error(log_name_ + "::ctor. Error: YARP network is not available."));
+    }
+
+    /* Open input port. */
+    if(!hand_pose_port_in_.open("/" + port_prefix + "/vtk-icub-hand/" + laterality + "/state:i"))
+        throw(std::runtime_error(log_name_ + "::ctor. Cannot open hand pose input port."));
+
+    /* Add meshes of hand parts. */
+    meshes_.emplace("palm", VtkMeshOBJ(MeshResources("full_" +  laterality_key + "HandPalm.obj"), color, opacity));
+    meshes_.emplace("top_cover", VtkMeshOBJ(MeshResources("full_" +  laterality_key + "TopCover.obj"), color, opacity));
+
+    meshes_.emplace("thumb0", VtkMeshOBJ(MeshResources("full_" + laterality_key + "Thumb0.obj"), color, opacity));
+    meshes_.emplace("thumb1", VtkMeshOBJ(MeshResources("full_" + laterality_key + "Thumb1.obj"), color, opacity));
+    meshes_.emplace("thumb2", VtkMeshOBJ(MeshResources("full_" + laterality_key + "Thumb2.obj"), color, opacity));
+    meshes_.emplace("thumb3", VtkMeshOBJ(MeshResources("full_" + laterality_key + "Thumb3.obj"), color, opacity));
+
+    meshes_.emplace("index0", VtkMeshOBJ(MeshResources("full_" + laterality_key + "Index0.obj"), color, opacity));
+    meshes_.emplace("index1", VtkMeshOBJ(MeshResources("full_" + laterality_key + "Index1.obj"), color, opacity));
+    meshes_.emplace("index2", VtkMeshOBJ(MeshResources("full_" + laterality_key + "Index2.obj"), color, opacity));
+    meshes_.emplace("index3", VtkMeshOBJ(MeshResources("full_" + laterality_key + "Index3.obj"), color, opacity));
+
+    meshes_.emplace("middle0", VtkMeshOBJ(MeshResources("full_" + laterality_key + "Middle0.obj"), color, opacity));
+    meshes_.emplace("middle1", VtkMeshOBJ(MeshResources("full_" + laterality_key + "Middle1.obj"), color, opacity));
+    meshes_.emplace("middle2", VtkMeshOBJ(MeshResources("full_" + laterality_key + "Middle2.obj"), color, opacity));
+    meshes_.emplace("middle3", VtkMeshOBJ(MeshResources("full_" + laterality_key + "Middle3.obj"), color, opacity));
+
+    meshes_.emplace("ring0", VtkMeshOBJ(MeshResources("full_" + laterality_key + "Ring0.obj"), color, opacity));
+    meshes_.emplace("ring1", VtkMeshOBJ(MeshResources("full_" + laterality_key + "Ring1.obj"), color, opacity));
+    meshes_.emplace("ring2", VtkMeshOBJ(MeshResources("full_" + laterality_key + "Ring2.obj"), color, opacity));
+    meshes_.emplace("ring3", VtkMeshOBJ(MeshResources("full_" + laterality_key + "Ring3.obj"), color, opacity));
+
+    meshes_.emplace("little0", VtkMeshOBJ(MeshResources("full_" + laterality_key + "Little0.obj"), color, opacity));
+    meshes_.emplace("little1", VtkMeshOBJ(MeshResources("full_" + laterality_key + "Little1.obj"), color, opacity));
+    meshes_.emplace("little2", VtkMeshOBJ(MeshResources("full_" + laterality_key + "Little2.obj"), color, opacity));
+    meshes_.emplace("little3", VtkMeshOBJ(MeshResources("full_" + laterality_key + "Little3.obj"), color, opacity));
+
+    /* Configure forward kinematics. */
+    forward_kinematics_ = std::unique_ptr<iCubForwardKinematics>
+    (
+        new iCubForwardKinematics(laterality + "_hand")
+    );
+
+    transform_.setIdentity();
 }

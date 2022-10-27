@@ -35,6 +35,8 @@ class RobotsViz::VtkiCubHand : public RobotsViz::VtkContent
 public:
     VtkiCubHand(const std::string& robot_name, const std::string& laterality, const std::string& port_prefix, const bool& use_fingers, const bool& use_analogs, const std::tuple<double, double, double>& color, const double& opacity, const bool& use_abduction = true);
 
+    VtkiCubHand(const std::string& robot_name, const std::string& laterality, const std::string& port_prefix, const bool& use_fingers, const bool& use_analogs, const std::tuple<double, double, double>& color, const double& opacity, const bool& use_analogs_bounds, const yarp::sig::Matrix& analog_bounds, const bool& use_abduction = true);
+
     virtual ~VtkiCubHand();
 
     void add_to_renderer(vtkRenderer& renderer) override;
@@ -48,6 +50,9 @@ public:
     void setOpacity(const double& opacity);
 
 private:
+
+    void setup(const std::string& laterality, const std::string& port_prefix, const std::tuple<double, double, double>& color, const double& opacity);
+
     yarp::os::Network yarp_;
 
     std::unordered_map<std::string, VtkMeshOBJ> meshes_;
@@ -58,7 +63,7 @@ private:
 
     std::unique_ptr<RobotsIO::Hand::iCubHand> fingers_encoders_;
 
-    const bool use_fingers_;
+    bool use_fingers_;
 
     const std::string log_name_ = "VtkiCubHand";
 
